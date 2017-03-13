@@ -7,7 +7,7 @@ from nn import neural_net, LossHistory
 import os.path
 import timeit
 
-NUM_INPUT = 6
+NUM_INPUT = 8
 GAMMA = 0.9  # Forgetting.
 TUNING = False # If False, just use arbitrary, pre-selected params.
 

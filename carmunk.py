@@ -138,16 +138,20 @@ class GameState:
         # Update the screen and stuff.
         screen.fill(THECOLORS["black"])
         draw(screen, self.space)
-        self.space.step(1./10)
+        self.space.step(1./30)  #original 1./10
         if draw_screen:
             pygame.display.flip()
         clock.tick()
 
         # Get the current location and the readings there.
         x, y = self.car_body.position
+        x_cat, y_cat = self.cat_body.position
         readings = self.get_sonar_readings(x, y, self.car_body.angle)
+        readings.append([x_cat,y_cat])
         state = np.array([readings])
         
+        print readings
+
         # Set the reward.
         # Car crashed when any reading == 1
 
@@ -176,13 +180,13 @@ class GameState:
             obstacle.velocity = speed * direction
 
     def move_cat(self):
-        speed = random.randint(20, 40)
+        speed = random.randint(50, 100)
         self.cat_body.angle -= random.randint(-1, 1)
         direction = Vec2d(1, 0).rotated(self.cat_body.angle)
         self.cat_body.velocity = speed * direction
 
     def move_dog(self):
-        speed = random.randint(10, 20)
+        speed = random.randint(40, 60)
         self.dog_body.angle -= random.randint(-1, 1)
         direction = Vec2d(1, 0).rotated(self.dog_body.angle)
         self.dog_body.velocity = speed * direction
@@ -232,7 +236,8 @@ class GameState:
         """
         while self.caught:
             # Go backwards.
-            self.car_body.velocity = -100 * driving_direction
+            self.cat_body.position = random.randint(1,1000), random.randint(1,700)    
+            #self.car_body.velocity = -100 * driving_direction
             self.caught = False
             for i in range(10):
                 self.car_body.angle += .2  # Turn a little.
@@ -248,7 +253,7 @@ class GameState:
         readings = np.asarray(readings)
         
         a = np.transpose(readings)
-        print a[0],a[1]
+        #print a[0],a[1]
         return np.dot(a[0],a[1])
                 
     def get_sonar_readings(self, x, y, angle):
@@ -297,7 +302,7 @@ class GameState:
                 obs = screen.get_at(rotated_p)
                 if self.get_track_or_not(obs) != 0:
                     if show_sensors:       
-                        pygame.draw.circle(screen, (255, 255, 255), (rotated_p), 6)
+                        pygame.draw.circle(screen, (255, 255, 255), (rotated_p), 10)
                     return i, self.get_track_or_not(obs)
 
             if show_sensors:
