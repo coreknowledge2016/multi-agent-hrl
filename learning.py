@@ -7,7 +7,7 @@ from nn import neural_net, LossHistory
 import os.path
 import timeit
 
-NUM_INPUT = 8
+NUM_INPUT = 6
 GAMMA = 0.9  # Forgetting.
 TUNING = False # If False, just use arbitrary, pre-selected params.
 
@@ -35,7 +35,7 @@ def train_net(model, params):
     game_state = carmunk.GameState()
 
     # Get initial state by doing nothing and getting the state.
-    _, state = game_state.frame_step((2))
+    _, state = game_state.frame_step(2,2)
 
     # Let's time it.
     start_time = timeit.default_timer()
@@ -49,6 +49,7 @@ def train_net(model, params):
         # Choose an action.
         if random.random() < epsilon or t < observe:
             action = np.random.randint(0, 3)  # random
+            action2 = np.random.randint(0, 3)
         else:
             # Get Q values for each action.
             state = state.reshape(1,NUM_INPUT) # reshape
@@ -56,10 +57,10 @@ def train_net(model, params):
             action = (np.argmax(qval))  # best
 
         # Take action, observe new state and get our treat.
-        reward, new_state = game_state.frame_step(action)
+        reward, new_state = game_state.frame_step(action, action2)
 
         # Experience replay storage.
-        replay.append((state, action, reward, new_state))
+        replay.append((state, action, action2, reward, new_state))
 
         # If we're done observing, start training.
         if t > observe:
@@ -141,7 +142,7 @@ def process_minibatch(minibatch, model):
     # so that we can fit our model at every step.
     for memory in minibatch:
         # Get stored values.
-        old_state_m, action_m, reward_m, new_state_m = memory
+        old_state_m, action_m, action2_m, reward_m, new_state_m = memory
 
         old_state_m = old_state_m.reshape(1,NUM_INPUT)
         new_state_m = new_state_m.reshape(1,NUM_INPUT)
@@ -223,3 +224,6 @@ if __name__ == "__main__":
         }
         model = neural_net(NUM_INPUT, nn_param)
         train_net(model, params)
+
+
+# keras.callbacks.TensorBoard(log_dir='./logs', histogram_freq=0)
