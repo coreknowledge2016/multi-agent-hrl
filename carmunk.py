@@ -184,7 +184,7 @@ class GameState:
 
         state = np.array([readings])
         state2 = np.array([readings2])
-        
+
         print readings, readings2
 
         # Set the reward.

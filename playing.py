@@ -41,7 +41,7 @@ def play(model, model2):
 
 if __name__ == "__main__":
     saved_model = 'saved-models/164-150-100-200-170000.h5'
-    saved_model2 = 'saved-models2/0310-6-164-150-100-200-300000.h5'
+    saved_model2 = 'saved-models2/164-150-100-200-170000.h5'
     model = neural_net(NUM_SENSORS, [164, 150], saved_model)
     model2 = neural_net2(NUM_SENSORS, [164, 150], saved_model2)
     play(model, model2)
