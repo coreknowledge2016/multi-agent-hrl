@@ -77,7 +77,7 @@ def plot_file(filename, type='loss'):
             plt.plot(y_av[:-50])
             plt.ylabel('Smoothed Loss')
             plt.ylim(0, 5000)
-            plt.xlim(0, 250000)
+            plt.xlim(0, 500000)
         else:
             plt.plot(y_av[:-5])
             plt.ylabel('Smoothed Distance')

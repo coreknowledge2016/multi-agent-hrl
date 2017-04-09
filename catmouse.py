@@ -30,13 +30,14 @@ class GameState:
     def __init__(self):
         # Global-ish.
         self.crashed = 0
+        self.crashed2 = 0
         self.caught = 0
         # Physics stuff.
         self.space = pymunk.Space()
         self.space.gravity = pymunk.Vec2d(0., 0.)
 
-        # Create the car.
-        self.create_car(100, 100, 0.5)
+        # Create the cat.
+        self.create_cat(100, 100, 0.5)
 
         # Record steps.
         self.num_steps = 0
@@ -51,7 +52,7 @@ class GameState:
                 (2, height), (width, height), 2),
             pymunk.Segment(
                 self.space.static_body,
-                (width-2, height), (width-2, 2), 2),
+                (width - 2, height), (width - 2, 2), 2),
             pymunk.Segment(
                 self.space.static_body,
                 (2, 2), (width, 2), 2)
@@ -67,13 +68,13 @@ class GameState:
         # Create some obstacles, semi-randomly.
         # We'll create three and they'll move around to prevent over-fitting.
 
-        # self.obstacles = []
-        # self.obstacles.append(self.create_obstacle(200, 350, 70))
-        # self.obstacles.append(self.create_obstacle(700, 200, 80))
-        # self.obstacles.append(self.create_obstacle(600, 600, 70))
+        self.obstacles = []
+        self.obstacles.append(self.create_obstacle(200, 350, 70))
+        self.obstacles.append(self.create_obstacle(700, 200, 80))
+        self.obstacles.append(self.create_obstacle(600, 600, 70))
 
-        # Create a cat.
-        self.create_cat()
+        # Create a mouse.
+        self.create_mouse()
         # self.create_dog()
 
     def create_obstacle(self, x, y, r):
@@ -85,16 +86,16 @@ class GameState:
         self.space.add(c_body, c_shape)
         return c_body
 
-    # def create_cat(self):
+    # def create_mouse(self):
     #     inertia = pymunk.moment_for_circle(1, 0, 14, (0, 0))
-    #     self.cat_body = pymunk.Body(1, inertia)
-    #     self.cat_body.position = 50, height - 100
-    #     self.cat_shape = pymunk.Circle(self.cat_body, 35)
-    #     self.cat_shape.color = THECOLORS["orange"]
-    #     self.cat_shape.elasticity = 1.0
-    #     self.cat_shape.angle = 0.5
-    #     direction = Vec2d(1, 0).rotated(self.cat_body.angle)
-    #     self.space.add(self.cat_body, self.cat_shape)
+    #     self.mouse_body = pymunk.Body(1, inertia)
+    #     self.mouse_body.position = 50, height - 100
+    #     self.mouse_shape = pymunk.Circle(self.mouse_body, 35)
+    #     self.mouse_shape.color = THECOLORS["orange"]
+    #     self.mouse_shape.elasticity = 1.0
+    #     self.mouse_shape.angle = 0.5
+    #     direction = Vec2d(1, 0).rotated(self.mouse_body.angle)
+    #     self.space.add(self.mouse_body, self.mouse_shape)
 
     # def create_dog(self):
     #     inertia = pymunk.moment_for_circle(1, 0, 14, (0, 0))
@@ -107,64 +108,82 @@ class GameState:
     #     direction = Vec2d(1, 0).rotated(self.dog_body.angle)
     #     self.space.add(self.dog_body, self.dog_shape)
 
-    def create_cat(self):
+    def create_mouse(self):
+        inertia = pymunk.moment_for_circle(1, 0, 14, (0, 0))
+        self.mouse_body = pymunk.Body(1, inertia)
+        self.mouse_body.position = 50, height - 100
+        self.mouse_shape = pymunk.Circle(self.mouse_body, 25)
+        self.mouse_shape.color = THECOLORS["orange"]
+        self.mouse_shape.elasticity = 2.0
+        self.mouse_shape.angle = 0.5
+        running_direction = Vec2d(1, 0).rotated(self.mouse_body.angle)
+        self.mouse_body.apply_impulse(running_direction)
+        self.space.add(self.mouse_body, self.mouse_shape)
+
+    def create_cat(self, x, y, r):
         inertia = pymunk.moment_for_circle(1, 0, 14, (0, 0))
         self.cat_body = pymunk.Body(1, inertia)
-        self.cat_body.position = 50, height - 100
+        self.cat_body.position = x, y
         self.cat_shape = pymunk.Circle(self.cat_body, 25)
-        self.cat_shape.color = THECOLORS["orange"]
+        self.cat_shape.color = THECOLORS["green"]
         self.cat_shape.elasticity = 2.0
-        self.cat_shape.angle = 0.5
-        moving_direction = Vec2d(1, 0).rotated(self.cat_body.angle)
-        self.cat_body.apply_impulse(moving_direction)
+        self.cat_body.angle = r
+        chasing_direction = Vec2d(1, 0).rotated(self.cat_body.angle)
+        self.cat_body.apply_impulse(chasing_direction)
         self.space.add(self.cat_body, self.cat_shape)
 
-    def create_car(self, x, y, r):
-        inertia = pymunk.moment_for_circle(1, 0, 14, (0, 0))
-        self.car_body = pymunk.Body(1, inertia)
-        self.car_body.position = x, y
-        self.car_shape = pymunk.Circle(self.car_body, 25)
-        self.car_shape.color = THECOLORS["green"]
-        self.car_shape.elasticity = 2.0
-        self.car_body.angle = r
-        driving_direction = Vec2d(1, 0).rotated(self.car_body.angle)
-        self.car_body.apply_impulse(driving_direction)
-        self.space.add(self.car_body, self.car_shape)
-
     def frame_step(self, action, action2):
+
+        chasing_direction = Vec2d(1, 0).rotated(self.cat_body.angle)
+        # self.cat_body.velocity = 30 * chasing_direction
+
+        running_direction = Vec2d(1, 0).rotated(self.mouse_body.angle)
+        # self.mouse_body.velocity = 30 * running_direction
+
         if action == 0:  # Turn left.
-            self.car_body.angle -= .2
+            self.cat_body.angle -= .2
         elif action == 1:  # Turn right.
-            self.car_body.angle += .2
+            self.cat_body.angle += .2
+
+        elif action == 2:  
+            self.cat_body.apply_force(running_direction)
+            # self.cat_body.velocity *= 1.2
 
         elif action == 3:
-            self.car_body.velocity = 1.2 * self.cat_body.velocity
+            self.cat_body.apply_force(-1 * running_direction)
+            # self.cat_body.velocity *= 0.8
 
-        elif action == 4:
-            self.car_body.velocity = 0.8 * self.cat_body.velocity
+
 
         elif action2 == 0:  # Turn right.
-            self.cat_body.angle += .2  
+            self.mouse_body.angle += .2  
 
         elif action2 == 1:  # Turn right.
-            self.cat_body.angle += .2
+            self.mouse_body.angle += .2
+
+        elif action2 == 2:  
+            self.mouse_body.apply_force(running_direction)
+
+        elif action2 == 3:
+            self.mouse_body.apply_force(-1 * running_direction)
+
 
         # Move obstacles.
         # if self.num_steps % 50 == 0:
         #     self.move_obstacles()
 
-        # Move cat.
+        # Move mouse.
         # if self.num_steps % 5 == 0:
-        #     self.move_cat()
+        #     self.move_mouse()
 
         # if self.num_steps % 5 == 0:
         #     self.move_dog()
 
-        driving_direction = Vec2d(1, 0).rotated(self.car_body.angle)
-        self.car_body.velocity = 30 * driving_direction
+        chasing_direction = Vec2d(1, 0).rotated(self.cat_body.angle)
+        self.cat_body.velocity = 30 * chasing_direction
 
-        moving_direction = Vec2d(1, 0).rotated(self.cat_body.angle)
-        self.cat_body.velocity = 30 * moving_direction
+        running_direction = Vec2d(1, 0).rotated(self.mouse_body.angle)
+        self.mouse_body.velocity = 30 * running_direction
 
         # Update the screen and stuff.
         screen.fill(THECOLORS["black"])
@@ -174,19 +193,26 @@ class GameState:
             pygame.display.flip()
         clock.tick()
 
-        # Get the current location and the readings there.
-        x, y = self.car_body.position
-        x_cat, y_cat = self.cat_body.position
+        # Get the current lomouseion and the readings there.
+        x, y = self.cat_body.position
+        x_mouse, y_mouse = self.mouse_body.position
 
         # if ball out of screen, seng them back
-        if x_cat < 1 or x_cat > 1000 or y_cat < 1 or y_cat > 700:
-            self.cat_body.position = random.randint(100, 900), random.randint(100, 600)
-            x_cat, y_cat = self.car_body.position
+        if x_mouse < 5 or x_mouse > 995 or y_mouse < 5 or y_mouse > 695:
+            self.mouse_body.position = random.randint(100,900), random.randint(100,600)    
+            x_mouse, y_mouse = self.mouse_body.position
 
-        readings = self.get_sonar_readings(x, y, self.car_body.angle)
-        readings2 = self.get_sonar_readings(x_cat, y_cat, self.cat_body.angle)
-        # readings.append([x,y])
-        # readings.append([x_cat,y_cat])
+        if x < 5 or x > 995 or y < 5 or y > 695:
+            self.cat_body.position = random.randint(100,900), random.randint(100,600)    
+            x, y = self.cat_body.position
+
+        readings = self.get_sonar_readings(x, y, self.cat_body.angle)
+        readings2 = self.get_sonar_readings(x_mouse, y_mouse, self.mouse_body.angle)
+
+
+        # add velocity to state space
+        # readings.append(self.cat_body.velocity)
+        # readings2.append(self.mouse_body.velocity)
 
         state = np.array([readings])
         state2 = np.array([readings2])
@@ -194,28 +220,35 @@ class GameState:
         print readings, readings2
 
         # Set the reward.
-        # Car crashed when any reading == 1
+        # cat crashed when any reading == 1
 
-        if self.car_is_crashed(readings):
+        if self.cat_is_crashed(readings):
             self.crashed = 1
             reward = -10
-            self.recover_from_crash(driving_direction)
+            self.recover_from_crash(chasing_direction)
 
-        # if self.car_is_crashed(readings2):
+        if self.cat_is_crashed(readings2):
+            self.crashed2 = 1
+            reward2 = -10
+            self.recover_from_crash2(running_direction)
+
+
+
+        # if self.cat_is_crashed(readings2):
         #     self.crashed = 1
         #     reward2 = -10
-        #     self.recover_from_crash(moving_direction)
+        #     self.recover_from_crash(running_direction)
 
-        # elif self.cat_is_caught(readings):
+        # elif self.mouse_is_caught(readings):
         #     self.caught = 1
         #     reward = 500
-        #     self.recover_from_caught(driving_direction)
+        #     self.recover_from_caught(chasing_direction)
 
-        if self.cat_is_caught(readings, readings2):
+        if self.mouse_is_caught(readings, readings2):
             self.caught = 1
             reward = 500
             reward2 = -500
-            self.recover_from_caught(moving_direction)
+            self.recover_from_caught(running_direction)
 
         if readings[0][1] == -5 or readings[1][1] == -5 or readings[2][1] == -5:
             
@@ -228,7 +261,7 @@ class GameState:
 
             reward2 = -100 + int(self.sum_readings(readings2) / 10)
         
-        else: reward2 = -12 + int(self.sum_readings(readings) / 10)
+        else: reward2 = -12 + int(self.sum_readings(readings2) / 10)
         
          # else:
          #    # Higher readings are better, so return the sum.
@@ -244,14 +277,14 @@ class GameState:
     #     # Randomly move obstacles around.
     #     for obstacle in self.obstacles:
     #         speed = random.randint(1, 5)
-    #         direction = Vec2d(1, 0).rotated(self.car_body.angle + random.randint(-2, 2))
+    #         direction = Vec2d(1, 0).rotated(self.cat_body.angle + random.randint(-2, 2))
     #         obstacle.velocity = speed * direction
 
-    # def move_cat(self):
+    # def move_mouse(self):
     #     speed = random.randint(50, 100)
-    #     self.cat_body.angle -= random.randint(-1, 1)
-    #     direction = Vec2d(1, 0).rotated(self.cat_body.angle)
-    #     self.cat_body.velocity = speed * direction
+    #     self.mouse_body.angle -= random.randint(-1, 1)
+    #     direction = Vec2d(1, 0).rotated(self.mouse_body.angle)
+    #     self.mouse_body.velocity = speed * direction
 
     # def move_dog(self):
     #     speed = random.randint(40, 60)
@@ -260,7 +293,7 @@ class GameState:
     #     self.dog_body.velocity = speed * direction
 
 
-    def car_is_crashed(self, readings):
+    def cat_is_crashed(self, readings):
         
     
         if (readings[0][0]==1 and readings[0][1] != -5) \
@@ -271,7 +304,7 @@ class GameState:
         else:
             return 0
     
-    def cat_is_caught(self, readings, readings2):
+    def mouse_is_caught(self, readings, readings2):
         
         if (readings[0][0]==1 and readings[0][1] == -5) \
             or (readings[1][0] == 1 and readings[1][1] == -5 ) \
@@ -284,34 +317,52 @@ class GameState:
         else:
             return False
 
-    def recover_from_crash(self, driving_direction):
+    def recover_from_crash(self, chasing_direction):
         """
         We hit something, so recover.
         """
         while self.crashed:
             # Go backwards.
-            self.car_body.velocity = -30 * driving_direction
+            self.cat_body.velocity = -30 * chasing_direction
             self.crashed = False
             for i in range(10):
-                self.car_body.angle += .2  # Turn a little.
-                screen.fill(THECOLORS["red"])  # Red is scary!
+                self.cat_body.angle += .2  # Turn a little.
+                # screen.fill(THECOLORS["red"])  # Red is scaty!
                 draw(screen, self.space)
                 self.space.step(1./10)
                 if draw_screen:
                     pygame.display.flip()
                 clock.tick()
 
-    def recover_from_caught(self, moving_direction):
+    def recover_from_crash2(self, running_direction):
+        """
+        We hit wall, so recover.
+        """
+        while self.crashed2:
+            # Go backwards.
+            self.mouse_body.velocity = -30 * running_direction
+            self.crashed2 = False
+            for i in range(10):
+                self.mouse_body.angle += .2  # Turn a little.
+                # screen.fill(THECOLORS["red"])  # Red is scaty!
+                draw(screen, self.space)
+                self.space.step(1./10)
+                if draw_screen:
+                    pygame.display.flip()
+                clock.tick()
+
+
+    def recover_from_caught(self, running_direction):
         """
         We hit something, so recover.
         """
         while self.caught:
             # Go backwards.
-            self.cat_body.position = random.randint(100,900), random.randint(100,600)    
-            #self.car_body.velocity = -100 * driving_direction
+            self.mouse_body.position = random.randint(100,900), random.randint(100,600)    
+            #self.cat_body.velocity = -100 * chasing_direction
             self.caught = False
             for i in range(10):
-                self.car_body.angle += .2  # Turn a little.
+                self.cat_body.angle += .2  # Turn a little.
                 screen.fill(THECOLORS["green"])  # green is satisfying!
                 draw(screen, self.space)
                 self.space.step(1./10)

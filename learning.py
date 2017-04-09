@@ -1,5 +1,5 @@
-# from flat_game import carmunk
-import carmunk
+# from flat_game import catmouse
+import catmouse
 import numpy as np
 import random
 import csv
@@ -19,13 +19,13 @@ def train_net(model1, model2, params):
 
     observe = 1000  # Number of frames to observe before training.
     epsilon = 1
-    train_frames = 300000  # Number of frames to play.
+    train_frames = 500000  # Number of frames to play.
     batchSize = params['batchSize']
     buffer = params['buffer']
 
     # Just stuff used below.
-    # max_car_distance = 0
-    # car_distance = 0
+    # max_cat_distance = 0
+    # cat_distance = 0
     t = 0
     # data_collect = []
     replay = []  # stores tuples of (S, A, R, S').
@@ -36,10 +36,10 @@ def train_net(model1, model2, params):
     loss_log2 = []
 
     # Create a new game instance.
-    game_state = carmunk.GameState()
+    game_state = catmouse.GameState()
 
     # Get initial state by doing nothing and getting the state.
-    _, _, state, state2 = game_state.frame_step(2, 2)
+    _, _, state, state2 = game_state.frame_step(4, 4)
 
     # Let's time it.
     # start_time = timeit.default_timer()
@@ -48,7 +48,7 @@ def train_net(model1, model2, params):
     while t < train_frames:
 
         t += 1
-        # car_distance += 1
+        # cat_distance += 1
 
         # Choose an action.
         if random.random() < epsilon or t < observe:
@@ -122,27 +122,27 @@ def train_net(model1, model2, params):
 
         # We died, so update stuff.
         # if reward == -500:
-        #     # Log the car's distance at this T.
-        #     data_collect.append([t, car_distance])
+        #     # Log the cat's distance at this T.
+        #     data_collect.append([t, cat_distance])
 
         #     # Update max.
-        #     if car_distance > max_car_distance:
-        #         max_car_distance = car_distance
+        #     if cat_distance > max_cat_distance:
+        #         max_cat_distance = cat_distance
 
         #     # Time it.
         #     tot_time = timeit.default_timer() - start_time
-        #     fps = car_distance / tot_time
+        #     fps = cat_distance / tot_time
 
         #     # Output some stuff so we can watch.
         #     print("Max: %d at %d\tepsilon %f\t(%d)\t%f fps" %
-        #           (max_car_distance, t, epsilon, car_distance, fps))
+        #           (max_cat_distance, t, epsilon, cat_distance, fps))
 
         #     # Reset.
-        #     car_distance = 0
+        #     cat_distance = 0
         #     start_time = timeit.default_timer()
 
         # Save the model every 25,000 frames.
-        if t % 10000 == 0:
+        if t % 13000 == 0:
             model.save_weights('saved-models/' + filename + '-' +
                                str(t) + '.h5',
                                overwrite=True)
@@ -196,7 +196,7 @@ def process_minibatch(minibatch, model):
         newQ = model.predict(new_state_m, batch_size=1)
         # Get our best move. I think?
         maxQ = np.max(newQ)
-        y = np.zeros((1, 3))  # three actions
+        y = np.zeros((1, 5))  # three actions
         y[:] = old_qval[:]
         # Check for terminal state.
         if reward_m != 500 or reward_m != -500:  # non-terminal state
@@ -206,7 +206,7 @@ def process_minibatch(minibatch, model):
         # Update the value for the action we took.
         y[0][action_m] = update
         X_train.append(old_state_m.reshape(NUM_INPUT,))
-        y_train.append(y.reshape(3,))
+        y_train.append(y.reshape(5,))
 
     X_train = np.array(X_train)
     y_train = np.array(y_train)

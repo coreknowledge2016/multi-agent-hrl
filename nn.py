@@ -45,7 +45,7 @@ def neural_net(num_sensors, params, load=''):
     model.add(Dropout(0.2))
 
     # Output layer.
-    model.add(Dense(3, init='lecun_uniform'))
+    model.add(Dense(5, init='lecun_uniform'))
     model.add(Activation('linear'))
 
     rms = RMSprop()
@@ -72,7 +72,7 @@ def neural_net2(num_sensors, params, load=''):
     model2.add(Dropout(0.2))
 
     # Output layer.
-    model2.add(Dense(3, init='lecun_uniform'))
+    model2.add(Dense(5, init='lecun_uniform'))
     model2.add(Activation('linear'))
 
     rms = RMSprop()
