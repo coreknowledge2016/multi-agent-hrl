@@ -97,4 +97,3 @@ def lstm_net(num_sensors, load=False):
     model.compile(loss="mean_squared_error", optimizer="rmsprop")
 
     return model
-

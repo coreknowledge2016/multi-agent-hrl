@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import random
 import math
 import numpy as np
@@ -38,6 +37,7 @@ class GameState:
 
         # Create the cat.
         self.create_cat(100, 100, 0.5)
+        self.create_mouse(900, 600, 0.5)
 
         # Record steps.
         self.num_steps = 0
@@ -74,7 +74,6 @@ class GameState:
         self.obstacles.append(self.create_obstacle(600, 600, 70))
 
         # Create a mouse.
-        self.create_mouse()
         # self.create_dog()
 
     def create_obstacle(self, x, y, r):
@@ -85,17 +84,6 @@ class GameState:
         c_shape.color = THECOLORS["blue"]
         self.space.add(c_body, c_shape)
         return c_body
-
-    # def create_mouse(self):
-    #     inertia = pymunk.moment_for_circle(1, 0, 14, (0, 0))
-    #     self.mouse_body = pymunk.Body(1, inertia)
-    #     self.mouse_body.position = 50, height - 100
-    #     self.mouse_shape = pymunk.Circle(self.mouse_body, 35)
-    #     self.mouse_shape.color = THECOLORS["orange"]
-    #     self.mouse_shape.elasticity = 1.0
-    #     self.mouse_shape.angle = 0.5
-    #     direction = Vec2d(1, 0).rotated(self.mouse_body.angle)
-    #     self.space.add(self.mouse_body, self.mouse_shape)
 
     # def create_dog(self):
     #     inertia = pymunk.moment_for_circle(1, 0, 14, (0, 0))
@@ -108,23 +96,11 @@ class GameState:
     #     direction = Vec2d(1, 0).rotated(self.dog_body.angle)
     #     self.space.add(self.dog_body, self.dog_shape)
 
-    def create_mouse(self):
-        inertia = pymunk.moment_for_circle(1, 0, 14, (0, 0))
-        self.mouse_body = pymunk.Body(1, inertia)
-        self.mouse_body.position = 50, height - 100
-        self.mouse_shape = pymunk.Circle(self.mouse_body, 25)
-        self.mouse_shape.color = THECOLORS["orange"]
-        self.mouse_shape.elasticity = 2.0
-        self.mouse_shape.angle = 0.5
-        running_direction = Vec2d(1, 0).rotated(self.mouse_body.angle)
-        self.mouse_body.apply_impulse(running_direction)
-        self.space.add(self.mouse_body, self.mouse_shape)
-
     def create_cat(self, x, y, r):
         inertia = pymunk.moment_for_circle(1, 0, 14, (0, 0))
-        self.cat_body = pymunk.Body(1, inertia)
+        self.cat_body = pymunk.Body(3, inertia)
         self.cat_body.position = x, y
-        self.cat_shape = pymunk.Circle(self.cat_body, 25)
+        self.cat_shape = pymunk.Circle(self.cat_body, 30)
         self.cat_shape.color = THECOLORS["green"]
         self.cat_shape.elasticity = 2.0
         self.cat_body.angle = r
@@ -132,40 +108,72 @@ class GameState:
         self.cat_body.apply_impulse(chasing_direction)
         self.space.add(self.cat_body, self.cat_shape)
 
+    def create_mouse(self, x, y, r):
+        inertia = pymunk.moment_for_circle(1, 0, 14, (0, 0))
+        self.mouse_body = pymunk.Body(1, inertia)
+        self.mouse_body.position = x, y
+        self.mouse_shape = pymunk.Circle(self.mouse_body, 20)
+        self.mouse_shape.color = THECOLORS["orange"]
+        self.mouse_shape.elasticity = 2.0
+        self.mouse_shape.angle = r
+        running_direction = Vec2d(1, 0).rotated(self.mouse_body.angle)
+        self.mouse_body.apply_impulse(running_direction)
+        self.space.add(self.mouse_body, self.mouse_shape)
+
     def frame_step(self, action, action2):
 
         chasing_direction = Vec2d(1, 0).rotated(self.cat_body.angle)
-        # self.cat_body.velocity = 30 * chasing_direction
+        self.cat_body.velocity = 20 * chasing_direction
 
         running_direction = Vec2d(1, 0).rotated(self.mouse_body.angle)
-        # self.mouse_body.velocity = 30 * running_direction
+        self.mouse_body.velocity = 20 * running_direction
+
+        reward = 0
+        reward2 = 0
 
         if action == 0:  # Turn left.
-            self.cat_body.angle -= .2
+            # self.cat_body.angle -= .2
+            chasing_direction = Vec2d(1, 0).rotated(self.cat_body.angle + 0.2)
+            self.cat_body.apply_force((0.01, 0),chasing_direction)
+            reward = -2
+
         elif action == 1:  # Turn right.
-            self.cat_body.angle += .2
+            # self.cat_body.angle += .2
+            chasing_direction = Vec2d(1, 0).rotated(self.cat_body.angle - 0.2)
+            self.cat_body.apply_force((0.01, 0),chasing_direction)
+            reward = -2
 
-        elif action == 2:  
-            self.cat_body.apply_force(running_direction)
-            # self.cat_body.velocity *= 1.2
+        # elif action == 2:  # Turn right.
+        #     # self.cat_body.angle += .2
+        #     chasing_direction = Vec2d(1, 0).rotated(self.cat_body.angle)
+        #     self.cat_body.apply_force((0.02,0),chasing_direction)
 
-        elif action == 3:
-            self.cat_body.apply_force(-1 * running_direction)
+        # elif action == 3:
+        #     chasing_direction = Vec2d(1, 0).rotated(self.cat_body.angle)
+        #     self.cat_body.apply_force((0.02,0),-chasing_direction)
             # self.cat_body.velocity *= 0.8
 
 
 
         elif action2 == 0:  # Turn right.
-            self.mouse_body.angle += .2  
+            # self.mouse_body.angle += .2  
+            running_direction = Vec2d(1, 0).rotated(self.mouse_body.angle + 0.2)
+            self.mouse_body.apply_force((0.01,0),running_direction)
+            reward2 = -2
 
         elif action2 == 1:  # Turn right.
-            self.mouse_body.angle += .2
+            # self.mouse_body.angle += .2
+            running_direction = Vec2d(1, 0).rotated(self.mouse_body.angle - 0.2)
+            self.mouse_body.apply_force((0.01,0),running_direction)
+            reward2 = -2
 
-        elif action2 == 2:  
-            self.mouse_body.apply_force(running_direction)
+        # elif action2 == 2:
+        #     running_direction = Vec2d(1, 0).rotated(self.mouse_body.angle)
+        #     self.mouse_body.apply_force((0.02,0),running_direction)
 
-        elif action2 == 3:
-            self.mouse_body.apply_force(-1 * running_direction)
+        # elif action2 == 3:
+        #     running_direction = Vec2d(1, 0).rotated(self.mouse_body.angle)
+        #     self.mouse_body.apply_force((0.02,0),-running_direction)
 
 
         # Move obstacles.
@@ -179,11 +187,13 @@ class GameState:
         # if self.num_steps % 5 == 0:
         #     self.move_dog()
 
-        chasing_direction = Vec2d(1, 0).rotated(self.cat_body.angle)
-        self.cat_body.velocity = 30 * chasing_direction
+        # chasing_direction = Vec2d(1, 0).rotated(self.cat_body.angle)
+        # self.cat_body.velocity = 30 * chasing_direction
 
-        running_direction = Vec2d(1, 0).rotated(self.mouse_body.angle)
-        self.mouse_body.velocity = 30 * running_direction
+        # running_direction = Vec2d(1, 0).rotated(self.mouse_body.angle)
+        # self.mouse_body.velocity = 30 * running_direction
+
+        
 
         # Update the screen and stuff.
         screen.fill(THECOLORS["black"])
@@ -482,4 +492,4 @@ class GameState:
 if __name__ == "__main__":
     game_state = GameState()
     while True:
-        game_state.frame_step(random.randint(0, 2))
+        game_state.frame_step(random.randint(0, 5),random.randint(0, 5))

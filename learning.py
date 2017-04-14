@@ -39,7 +39,7 @@ def train_net(model1, model2, params):
     game_state = catmouse.GameState()
 
     # Get initial state by doing nothing and getting the state.
-    _, _, state, state2 = game_state.frame_step(4, 4)
+    _, _, state, state2 = game_state.frame_step(5, 5)
 
     # Let's time it.
     # start_time = timeit.default_timer()
@@ -52,8 +52,8 @@ def train_net(model1, model2, params):
 
         # Choose an action.
         if random.random() < epsilon or t < observe:
-            action = np.random.randint(0, 3)  # random
-            action2 = np.random.randint(0, 3)
+            action = np.random.randint(0, 4)  # random
+            action2 = np.random.randint(0, 4)
         else:
             # Get Q values for each action.
             state = state.reshape(1, NUM_INPUT)  # reshape
