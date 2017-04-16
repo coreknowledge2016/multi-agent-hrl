@@ -110,7 +110,7 @@ class GameState:
 
     def create_mouse(self, x, y, r):
         inertia = pymunk.moment_for_circle(1, 0, 14, (0, 0))
-        self.mouse_body = pymunk.Body(1, inertia)
+        self.mouse_body = pymunk.Body(2, inertia)
         self.mouse_body.position = x, y
         self.mouse_shape = pymunk.Circle(self.mouse_body, 20)
         self.mouse_shape.color = THECOLORS["orange"]
@@ -123,10 +123,12 @@ class GameState:
     def frame_step(self, action, action2):
 
         chasing_direction = Vec2d(1, 0).rotated(self.cat_body.angle)
+        # self.cat_body.velocity = 20 * chasing_direction
         self.cat_body.velocity = 20 * chasing_direction
 
         running_direction = Vec2d(1, 0).rotated(self.mouse_body.angle)
-        self.mouse_body.velocity = 20 * running_direction
+        # self.mouse_body.velocity = 20 * running_direction
+        self.cat_body.velocity =  20 * chasing_direction
 
         reward = 0
         reward2 = 0
@@ -152,8 +154,6 @@ class GameState:
         #     chasing_direction = Vec2d(1, 0).rotated(self.cat_body.angle)
         #     self.cat_body.apply_force((0.02,0),-chasing_direction)
             # self.cat_body.velocity *= 0.8
-
-
 
         elif action2 == 0:  # Turn right.
             # self.mouse_body.angle += .2  
@@ -221,38 +221,27 @@ class GameState:
 
 
         # add velocity to state space
-        # readings.append(self.cat_body.velocity)
-        # readings2.append(self.mouse_body.velocity)
+        readings.append(self.cat_body.velocity)
+        readings2.append(self.mouse_body.velocity)
 
         state = np.array([readings])
         state2 = np.array([readings2])
 
-        print readings, readings2
+        print("current state: cat %s mouse %s " %(readings, readings2))
 
         # Set the reward.
         # cat crashed when any reading == 1
 
-        if self.cat_is_crashed(readings):
+        if self.hit_the_wall(readings):
             self.crashed = 1
-            reward = -10
+            reward += -100
             self.recover_from_crash(chasing_direction)
 
-        if self.cat_is_crashed(readings2):
+        if self.hit_the_wall(readings2):
             self.crashed2 = 1
-            reward2 = -10
+            reward2 += -100
             self.recover_from_crash2(running_direction)
 
-
-
-        # if self.cat_is_crashed(readings2):
-        #     self.crashed = 1
-        #     reward2 = -10
-        #     self.recover_from_crash(running_direction)
-
-        # elif self.mouse_is_caught(readings):
-        #     self.caught = 1
-        #     reward = 500
-        #     self.recover_from_caught(chasing_direction)
 
         if self.mouse_is_caught(readings, readings2):
             self.caught = 1
@@ -260,24 +249,24 @@ class GameState:
             reward2 = -500
             self.recover_from_caught(running_direction)
 
-        if readings[0][1] == -5 or readings[1][1] == -5 or readings[2][1] == -5:
+        if readings[0][1] == -7 or readings[1][1] == -7 or readings[2][1] == -7:
             
-            reward = 100 - int(self.sum_readings(readings) / 10)
+            reward += 100 - int(self.sum_readings(readings) / 10)
 
-        else: reward = -12 + int(self.sum_readings(readings) / 10)
+        else: reward += -20 + int(self.sum_readings(readings) / 10)
 
 
-        if readings2[0][1] == -5 or readings2[1][1] == -5 or readings2[2][1] == -5:
+        if readings2[0][1] == -7 or readings2[1][1] == -7 or readings2[2][1] == -7:
 
-            reward2 = -100 + int(self.sum_readings(readings2) / 10)
+            reward2 += -100 + int(self.sum_readings(readings2) / 10)
         
-        else: reward2 = -12 + int(self.sum_readings(readings2) / 10)
+        else: reward2 += -20 + int(self.sum_readings(readings2) / 10)
         
          # else:
          #    # Higher readings are better, so return the sum.
          #    reward = -12 + int(self.sum_readings(readings) / 10)
 
-        print("current reward: %s, %s" % (reward, reward2)) 
+        print("current reward: cat %s, mouse %s" % (reward, reward2)) 
 
         self.num_steps += 1
 
@@ -303,12 +292,11 @@ class GameState:
     #     self.dog_body.velocity = speed * direction
 
 
-    def cat_is_crashed(self, readings):
+    def hit_the_wall(self, readings):
         
-    
-        if (readings[0][0]==1 and readings[0][1] != -5) \
-            or (readings[1][0] == 1 and readings[1][1] != -5 ) \
-            or (readings[2][0] == 1 and readings[2][1] != -5 ) :
+        if (readings[0][0]== 1 and readings[0][1] != -7) \
+            or (readings[1][0] == 1 and readings[1][1] != -7 ) \
+            or (readings[2][0] == 1 and readings[2][1] != -7 ) :
 
             return 1
         else:
@@ -316,12 +304,12 @@ class GameState:
     
     def mouse_is_caught(self, readings, readings2):
         
-        if (readings[0][0]==1 and readings[0][1] == -5) \
-            or (readings[1][0] == 1 and readings[1][1] == -5 ) \
-            or (readings[2][0] == 1 and readings[2][1] == -5 ) \
-            or (readings2[0][0]==1 and readings2[0][1] == -5) \
-            or (readings2[1][0] == 1 and readings2[1][1] == -5 ) \
-            or (readings2[2][0] == 1 and readings2[2][1] == -5 ):
+        if (readings[0][0]== 1 and readings[0][1] == -7) \
+            or (readings[1][0] == 1 and readings[1][1] == -7 ) \
+            or (readings[2][0] == 1 and readings[2][1] == -7 ) \
+            or (readings2[0][0]==1 and readings2[0][1] == -7) \
+            or (readings2[1][0] == 1 and readings2[1][1] == -7 ) \
+            or (readings2[2][0] == 1 and readings2[2][1] == -7 ):
             
             return True
         else:
@@ -333,7 +321,7 @@ class GameState:
         """
         while self.crashed:
             # Go backwards.
-            self.cat_body.velocity = -30 * chasing_direction
+            self.cat_body.velocity = -20 * chasing_direction
             self.crashed = False
             for i in range(10):
                 self.cat_body.angle += .2  # Turn a little.
@@ -350,7 +338,7 @@ class GameState:
         """
         while self.crashed2:
             # Go backwards.
-            self.mouse_body.velocity = -30 * running_direction
+            self.mouse_body.velocity = -20 * running_direction
             self.crashed2 = False
             for i in range(10):
                 self.mouse_body.angle += .2  # Turn a little.
@@ -368,7 +356,7 @@ class GameState:
         """
         while self.caught:
             # Go backwards.
-            self.mouse_body.position = random.randint(100,900), random.randint(100,600)    
+            self.mouse_body.position = random.randint(100, 900), random.randint(100, 600)    
             #self.cat_body.velocity = -100 * chasing_direction
             self.caught = False
             for i in range(10):
@@ -385,7 +373,6 @@ class GameState:
         readings = np.asarray(readings)
         a = np.transpose(readings)
         #print a[0],a[1]
-       
 
         return sum (a[0][:3])
 
@@ -476,18 +463,18 @@ class GameState:
     def get_track_or_not(self, reading):
         if reading == THECOLORS['black']:
             return 0
-        if reading == THECOLORS['white']:
-            return 0
-        elif reading == THECOLORS['yellow']:
-            return 5
-        elif reading == THECOLORS['blue']:
+        elif reading == THECOLORS['red']:
             return 1
+        # elif reading == THECOLORS['yellow']:
+        #     return 5 
+        elif reading == THECOLORS['blue']:
+            return 1 # obstacle
         elif reading == THECOLORS['orange']:
-            return -5
+            return -7 # mouse
         elif reading == THECOLORS['green']:
-            return -5
+            return -7 # cat
         else :
-            return 0 # red 
+            return 0 # wall 
             
 if __name__ == "__main__":
     game_state = GameState()
